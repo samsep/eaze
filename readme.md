@@ -10,7 +10,7 @@
 
 ## Setup
 
-Start by cloning this repo. Everything you'll need to get started is already configured for you. You'll need to commit your code at least once, but probably more often. Please use whatever commit and code style you like best, but please make sure all syntax is supported by Node v4.
+Start by cloning this repo. Everything you'll need to get started is already configured for you. You'll need to commit your code at least once, but probably more often. Please use whatever commit and code style you like best, but please make sure all syntax is supported by Node v8.
 
 We've already created an `index.js` file as your entry point. Create as many additional files as you'd like.
 
