@@ -1,15 +1,15 @@
-'use strict'
 
-const test = require('tape')
-const series = require('run-series')
-const fs = require('fs')
-const folderSize = require('get-folder-size')
-const download = require('./')
+const test = require('tape');
+const series = require('run-series');
+const fs = require('fs');
+const folderSize = require('get-folder-size');
+const download = require('./');
+const async = require('async');
 
 test('download', function (t) {
   t.plan(3)
 
-  const COUNT = parseInt(process.env.COUNT, 10) || 10
+  const COUNT = parseInt(process.env.COUNT, 10) || 10;
 
   series([
     (callback) => download(COUNT, callback),
@@ -19,12 +19,27 @@ test('download', function (t) {
   ], t.end)
 
   function verifyCount (callback) {
-    fs.readdir('./packages', function (err, files) {
-      if (err) return callback(err)
+    fs.readdir('./packages', (err, files) => {
+      if (err) return callback(err);
       // Filter .gitignore and other hidden files
-      files = files.filter((file) => !/^\./.test(file))
-      t.equal(files.length, COUNT, `has ${COUNT} files`)
-      callback()
+      // Account for packages in same namespace such as @angular
+      let packageFiles = files.filter((file) => !/^\./.test(file) && !/^@/.test(file));
+      const nameSpaceDirectories = files.filter((file) => /^@/.test(file));
+      const asyncCb = (err) => {
+        if (err) return callback(err);
+        t.equal(packageFiles.length, COUNT, `has ${COUNT} files`)
+        return callback();
+      };
+      async.each(nameSpaceDirectories, (directory, cb) => {
+        fs.readdir(`./packages/${directory}`, (err, subFiles) => {
+          if (err) return cb(err);
+          packageFiles = packageFiles.concat(subFiles);
+          cb();
+        })
+      }, asyncCb);
+      //count modules under same namespace, such as @angular
+      // t.equal(files.length, COUNT, `has ${COUNT} files`)
+      // callback()
     })
   }
 
