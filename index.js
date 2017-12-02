@@ -1,7 +1,13 @@
+'use strict';
+
 const getScrapedPackages = require('./lib/getScrapedPackages');
 const downloadFiles = require('./lib/downloadFiles');
 const winston = require('winston');
-
+/**
+ * Download top <count> npm packages
+ * @param {number} count - number of packages
+ * @param {function} callback
+ */
 function downloadPackages(count, callback) {
   const defaultCb = () => {};
   const directory = './packages';

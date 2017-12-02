@@ -1,3 +1,5 @@
+'use strict';
+
 const test = require('tape');
 const series = require('run-series');
 const fs = require('fs');
@@ -16,12 +18,12 @@ test('download', (t) => {
     verifySize,
     verifyLodash,
   ], t.end);
-
+  // Modified verifyCount test to correctly count namespaced packages such as @angular
   function verifyCount(callback) {
     fs.readdir('./packages', (err, files) => {
       if (err) return callback(err);
       // Filter .gitignore and other hidden files
-      // Account for packages in same namespace such as @angular
+      // Filter namespace directories that begin with '@' character
       let packageFiles = files.filter(file => !/^\./.test(file) && !/^@/.test(file));
       const nameSpaceDirectories = files.filter(file => /^@/.test(file));
       const asyncCb = (error) => {
@@ -29,7 +31,8 @@ test('download', (t) => {
         t.equal(packageFiles.length, COUNT, `has ${COUNT} files`);
         return callback();
       };
-      return async.each(nameSpaceDirectories, (directory, cb) => {
+      // Add packages under namespace directories to list of packages
+      return async.eachLimit(nameSpaceDirectories, 10, (directory, cb) => {
         fs.readdir(`./packages/${directory}`, (error, subFiles) => {
           if (error) return cb(error);
           packageFiles = packageFiles.concat(subFiles);
